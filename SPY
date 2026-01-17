@@ -325,28 +325,3 @@ ax = eval_df[["var20_avg", "rv20_avg"]].plot(title="SPY: 20-day average daily va
 ax.set_ylabel("Variance (percent^2)")
 plt.show()
 
-# -------------------------
-# Optional: try GJR-GARCH (leverage) and compare
-# -------------------------
-fc_gjr = garch_rolling_oos_forecasts(
-    returns=returns,
-    origins=origins,
-    horizon=H,
-    window=252 * 5,
-    mean="Constant",
-    dist="t",
-    p=1, o=1, q=1    # GJR-GARCH(1,1)
-)
-
-eval_gjr = fc_gjr.join(rv1).join(rv20).dropna()
-eval_gjr["var20_avg"] = eval_gjr[f"var{H}"] / H
-eval_gjr["rv20_avg"] = eval_gjr["rv20"] / H
-eval_gjr["qlike1"] = qlike(eval_gjr["var1"], eval_gjr["rv1"])
-eval_gjr["qlike20"] = qlike(eval_gjr[f"var{H}"], eval_gjr["rv20"])
-eval_gjr["qlike20_avg"] = qlike(eval_gjr["var20_avg"], eval_gjr["rv20_avg"])
-
-print("\nQLIKE comparison (lower is better):")
-print(pd.DataFrame({
-    "GARCH_t": eval_df[["qlike1", "qlike20", "qlike20_avg"]].mean(),
-    "GJR_t":   eval_gjr[["qlike1", "qlike20", "qlike20_avg"]].mean(),
-}))
